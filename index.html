@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Designer for Modular Pallet Racking Visual System (POC)</title>
+    <style>
+      :root {
+        /* Light, industrial-inspired palette */
+        --bg: #f4f5f7;
+        --panel: #ffffff;
+        --panel2: #f0f2f5;
+        --text: #1f2933;
+        --muted: #6b7280;
+        --border: rgba(15, 23, 42, 0.12);
+        --shadow: 0 14px 40px rgba(15, 23, 42, 0.12);
+        --accent: #2563eb;
+        --accent-soft: rgba(37, 99, 235, 0.08);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Helvetica,
+          Arial;
+        /* background:
+          radial-gradient(
+            800px 400px at 10% 0%,
+            rgba(148, 163, 184, 0.35),
+            transparent
+          ),
+          radial-gradient(
+            600px 300px at 80% 0%,
+            rgba(191, 219, 254, 0.7),
+            transparent
+          ),
+          var(--bg); */
+        color: var(--text);
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: 40px auto;
+        padding: 0 18px 60px;
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: 28px;
+        letter-spacing: 0.2px;
+      }
+      .sub {
+        color: var(--muted);
+        margin: 0 0 18px;
+        line-height: 1.35;
+      }
+      .panel {
+        /* Optisch entschlackt: keine zusätzliche Karte um alles herum */
+        padding: 8px 0 0;
+      }
+      .controls {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr 1fr 1fr;
+        gap: 12px;
+        align-items: end;
+      }
+      @media (max-width: 860px) {
+        .controls {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      label {
+        display: block;
+        font-size: 12px;
+        color: var(--muted);
+        margin: 0 0 6px;
+      }
+      select,
+      input[type="range"] {
+        width: 100%;
+      }
+      select {
+        background: var(--panel2);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 10px;
+        outline: none;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+      }
+      .rangeRow {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--panel2);
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+        margin-top: 14px;
+      }
+      .canvasPanel {
+        /* Nur noch Abstand, keine weitere Box-Optik */
+        padding: 0;
+      }
+      .canvasTitle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin: 0 0 10px;
+      }
+      .canvasTitle h2 {
+        margin: 0;
+        font-size: 14px;
+        color: var(--text);
+        font-weight: 600;
+        letter-spacing: 0.2px;
+      }
+      .note {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      canvas {
+        width: 100%;
+        height: auto;
+        display: block;
+        /* background:
+          repeating-linear-gradient(
+            90deg,
+            #e5e7eb,
+            #e5e7eb 1px,
+            #f9fafb 1px,
+            #f9fafb 16px
+          ),
+          linear-gradient(180deg, #f9fafb, #eef2f7); */
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        border-radius: 12px;
+      }
+      .rowMeta {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .rowMeta code {
+        background: #eef2f7;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        padding: 4px 7px;
+        border-radius: 8px;
+        color: var(--text);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Designer for Modular Pallet Racking Visual System (POC)</h1>
+
+      <div class="panel">
+        <div class="controls">
+          <div>
+            <label for="heightSel">Rack Height</label>
+            <select id="heightSel">
+              <option value="1">2.500 mm</option>
+              <option value="2">4.500 mm</option>
+              <option value="3">5.500 mm</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="widthSel">Bay Width</label>
+            <select id="widthSel">
+              <option value="1825">1.825 mm</option>
+              <option value="2700" selected>2.700 mm</option>
+              <option value="3600">3.600 mm</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="baysSel">Number of Bays</label>
+            <select id="baysSel"></select>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="canvasPanel">
+            <div class="canvasTitle">
+              <h2>Vorschau</h2>
+            </div>
+            <canvas id="preview" width="1200" height="520"></canvas>
+            <div class="rowMeta" id="metaPreview"></div>
+          </div>
+
+          <div class="canvasPanel" style="display: none">
+            <div class="canvasTitle">
+              <h2>Debug / World Canvas</h2>
+              <div class="note">
+                Hier siehst du die Original-Platzierung (Koordinaten, Abstände)
+              </div>
+            </div>
+            <canvas id="debug" width="1800" height="520"></canvas>
+            <div class="rowMeta" id="metaDebug"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        // ---- Inputs ----
+        const heightSel = document.getElementById("heightSel");
+        const widthSel = document.getElementById("widthSel");
+        const baysSel = document.getElementById("baysSel");
+        const metaPreview = document.getElementById("metaPreview");
+        const metaDebug = document.getElementById("metaDebug");
+
+        // Fill bays 1..15 (wie im Briefing)
+        for (let i = 1; i <= 15; i++) {
+          const opt = document.createElement("option");
+          opt.value = String(i);
+          opt.textContent = String(i);
+          if (i === 5) opt.selected = true; // default
+          baysSel.appendChild(opt);
+        }
+
+        // ---- Canvases ----
+        const previewCanvas = document.getElementById("preview");
+        const debugCanvas = document.getElementById("debug");
+
+        // DPR helper (keeps crisp, aber Layout-Breite kommt vom Container)
+        function setupHiDPI(canvas, logicalW, logicalH) {
+          const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+          canvas.width = logicalW * dpr;
+          canvas.height = logicalH * dpr;
+          // Layout-Größe über CSS steuern
+          canvas.style.width = "100%";
+          canvas.style.height = "auto";
+          const ctx = canvas.getContext("2d");
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          return { ctx, dpr, logicalW, logicalH };
+        }
+
+        // preview width (logical) orientiert sich am Container; Höhe dynamisch
+        let PREVIEW_W = previewCanvas.clientWidth || 800;
+        let PREVIEW_H = 520;
+        const DEBUG_W = 1800,
+          DEBUG_H = 520;
+
+        // initial HiDPI setup
+        let P = setupHiDPI(previewCanvas, PREVIEW_W, PREVIEW_H).ctx;
+        const D = setupHiDPI(debugCanvas, DEBUG_W, DEBUG_H).ctx;
+
+        function resizePreviewCanvas(newLogicalH) {
+          PREVIEW_H = newLogicalH;
+          P = setupHiDPI(previewCanvas, PREVIEW_W, PREVIEW_H).ctx;
+        }
+
+        // ---- Assets ----
+        const BASE =
+          "https://raw.githubusercontent.com/kevinreuss/racking-poc/refs/heads/main/images/";
+        const urlByHeightId = {
+          1: BASE + "1.png",
+          2: BASE + "2.png",
+          3: BASE + "3.png",
+        };
+
+        const imgCache = new Map();
+        async function loadImage(src) {
+          if (imgCache.has(src)) return imgCache.get(src);
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          const prom = new Promise((resolve, reject) => {
+            img.onload = () => resolve(img);
+            img.onerror = (e) =>
+              reject(new Error("Image failed to load: " + src));
+          });
+          img.src = src;
+          imgCache.set(src, prom);
+          return prom;
+        }
+
+        // ---- World layout rules ----
+        // We define a "world" coordinate system for placement.
+        // Bay width affects spacing between uprights (in world pixels).
+        // You can tune these three numbers anytime to match real CAD proportions.
+        const spacingPxByBayWidth = {
+          1825: 280,
+          2700: 400,
+          3600: 520,
+        };
+
+        // World margins (in px)
+        const MARGIN_L = 60;
+        const MARGIN_R = 60;
+        const GROUND_Y_PADDING = 40; // free space at bottom for "ground line"
+        const TOP_PADDING = 30;
+
+        // Optional: ground line in debug
+        function drawGround(ctx, w, y) {
+          ctx.save();
+          ctx.strokeStyle = "rgba(255,255,255,.22)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(0, y + 0.5);
+          ctx.lineTo(w, y + 0.5);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // Clears the entire canvas before each render (no ghosting/overlap)
+        function clearCanvas(ctx, _w, _h) {
+          const canvas = ctx.canvas;
+          const width = canvas.width;
+          const height = canvas.height;
+
+          ctx.save();
+          // Reset transform so we clear the full backing store (important with HiDPI)
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.clearRect(0, 0, width, height);
+
+          // Optional: redraw a subtle background gradient
+          const g = ctx.createLinearGradient(0, 0, 0, height);
+          g.addColorStop(0, "rgba(255,255,255,.05)");
+          g.addColorStop(1, "rgba(0,0,0,.05)");
+          ctx.fillStyle = g;
+          ctx.fillRect(0, 0, width, height);
+
+          ctx.restore();
+        }
+
+        // ---- Render Pipeline ----
+        function computeWorld(img, bayWidth, bays) {
+          const spacing =
+            spacingPxByBayWidth[bayWidth] ?? spacingPxByBayWidth[2700];
+
+          // Uprights count: bays + 1 (typical racking logic)
+          const uprightsCount = bays + 1;
+
+          // World dimensions based on image width and spacing
+          // Place each upright's "left edge" at x = start + i*spacing.
+          // World width must include last upright's width.
+          const worldW = Math.ceil(
+            MARGIN_L + (uprightsCount - 1) * spacing + img.width + MARGIN_R,
+          );
+
+          // Height: image height plus top padding plus ground padding
+          const worldH = Math.ceil(TOP_PADDING + img.height + GROUND_Y_PADDING);
+
+          // Ground line (where the feet sit)
+          const groundY = TOP_PADDING + img.height;
+
+          // Start position
+          const startX = MARGIN_L;
+          const baseY = groundY - img.height; // so bottom aligns at ground line
+
+          // Compute positions
+          const uprightPositions = [];
+          for (let i = 0; i < uprightsCount; i++) {
+            uprightPositions.push({ x: startX + i * spacing, y: baseY });
+          }
+
+          return {
+            spacing,
+            uprightsCount,
+            worldW,
+            worldH,
+            groundY,
+            uprightPositions,
+          };
+        }
+
+        function drawWorldTo(ctx, img, world) {
+          clearCanvas(ctx, world.worldW, world.worldH);
+
+          // ground line
+          drawGround(ctx, world.worldW, world.groundY);
+
+          // Draw uprights
+          for (const p of world.uprightPositions) {
+            ctx.drawImage(img, p.x, p.y);
+          }
+
+          // Debug labels (optional)
+          ctx.save();
+          ctx.fillStyle = "rgba(255,255,255,.65)";
+          ctx.font =
+            "12px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
+          ctx.fillText(
+            `World: ${world.worldW}×${world.worldH}px | spacing=${world.spacing}px | uprights=${world.uprightsCount}`,
+            12,
+            18,
+          );
+          ctx.restore();
+        }
+
+        // Fit the world image into preview canvas (immer "contain"), zentriert
+        function drawPreviewFromWorld(
+          previewCtx,
+          previewW,
+          previewH,
+          worldCanvas,
+          fitMode,
+        ) {
+          clearCanvas(previewCtx, previewW, previewH);
+
+          const sw = worldCanvas.width; // physical px
+          const sh = worldCanvas.height;
+
+          // But our offscreen will be in logical pixels; we create it in logical px.
+          // So treat sw/sh as logical too because we don't hiDPI the offscreen.
+          // (We create offscreen at 1:1 logical px.)
+          const srcW = sw;
+          const srcH = sh;
+
+          const scaleContain = Math.min(previewW / srcW, previewH / srcH);
+          const s = scaleContain; // wir erzwingen immer "contain"
+
+          const dw = srcW * s;
+          const dh = srcH * s;
+
+          // center horizontally & vertically
+          const dx = (previewW - dw) / 2;
+          const dy = (previewH - dh) / 2;
+
+          previewCtx.imageSmoothingEnabled = true;
+          previewCtx.drawImage(worldCanvas, 0, 0, srcW, srcH, dx, dy, dw, dh);
+
+          // frame
+          previewCtx.save();
+          previewCtx.strokeStyle = "rgba(255,255,255,.14)";
+          previewCtx.lineWidth = 1;
+          previewCtx.strokeRect(0.5, 0.5, previewW - 1, previewH - 1);
+          previewCtx.restore();
+        }
+
+        async function render() {
+          // Aktuelle Containerbreite als logische Preview-Breite nehmen,
+          // damit das Bild nie breiter als der Container wird.
+          PREVIEW_W = previewCanvas.clientWidth || PREVIEW_W;
+
+          const hId = heightSel.value;
+          const bayWidth = parseInt(widthSel.value, 10);
+          const bays = parseInt(baysSel.value, 10);
+          const fit = "contain"; // erzwinge immer "contain", damit nichts aus dem Container ragt
+
+          const src = urlByHeightId[hId];
+          let img;
+          try {
+            img = await loadImage(src);
+          } catch (e) {
+            return;
+          }
+
+          // Compute world
+          const world = computeWorld(img, bayWidth, bays);
+
+          // Offscreen world canvas (logical px, 1:1)
+          const off = document.createElement("canvas");
+          off.width = world.worldW;
+          off.height = world.worldH;
+          const offCtx = off.getContext("2d");
+
+          // Draw world to offscreen
+          drawWorldTo(offCtx, img, world);
+
+          // Dynamische Höhe für die Preview: skaliere immer auf volle Breite,
+          // Höhe ergibt sich aus dem Seitenverhältnis der Welt.
+          const srcW = world.worldW;
+          const srcH = world.worldH;
+          const scaleToWidth = PREVIEW_W / srcW;
+          const newPreviewH = Math.round(srcH * scaleToWidth);
+          resizePreviewCanvas(newPreviewH);
+
+          // Draw preview
+          clearCanvas(P, PREVIEW_W, PREVIEW_H);
+          drawPreviewFromWorld(P, PREVIEW_W, PREVIEW_H, off, fit);
+
+          metaDebug.innerHTML = "";
+        }
+
+        // Re-render on changes
+        [heightSel, widthSel, baysSel].forEach((el) =>
+          el.addEventListener("change", render),
+        );
+        window.addEventListener("resize", () => {
+          // no need to re-setup canvases here; kept fixed
+        });
+
+        // Initial render after preloading all three (so switching is instant)
+        (async () => {
+          try {
+            await Promise.all(Object.values(urlByHeightId).map(loadImage));
+            await render();
+          } catch (e) {}
+        })();
+      })();
+    </script>
+  </body>
+</html>
